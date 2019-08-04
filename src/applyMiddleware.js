@@ -18,7 +18,9 @@ import compose from './compose'
  */
 export default function applyMiddleware(...middlewares) {
   return createStore => (...args) => {
+    // 接收createStore和createStore的前两个参数，见createStore中的enhancer
     const store = createStore(...args)
+    // 声明dispatch默认值是一个抛错函数
     let dispatch = () => {
       throw new Error(
         'Dispatching while constructing your middleware is not allowed. ' +
@@ -26,13 +28,17 @@ export default function applyMiddleware(...middlewares) {
       )
     }
 
+    // 传入到中间件的api
     const middlewareAPI = {
       getState: store.getState,
       dispatch: (...args) => dispatch(...args)
     }
+    // 中间件的执行结果也是方法集合
     const chain = middlewares.map(middleware => middleware(middlewareAPI))
+    // 又compose将这些执行方法集合串起来执行
     dispatch = compose(...chain)(store.dispatch)
 
+    // 返回store的结果， dispatch覆盖
     return {
       ...store,
       dispatch

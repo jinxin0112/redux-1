@@ -5,6 +5,7 @@
  * Do not reference these action types directly in your code.
  */
 
+ // 随机字符串生成
 const randomString = () =>
   Math.random()
     .toString(36)
@@ -13,8 +14,11 @@ const randomString = () =>
     .join('.')
 
 const ActionTypes = {
+  // 初始化状态树
   INIT: `@@redux/INIT${randomString()}`,
+  // 替换状态树
   REPLACE: `@@redux/REPLACE${randomString()}`,
+  //  ??? 
   PROBE_UNKNOWN_ACTION: () => `@@redux/PROBE_UNKNOWN_ACTION${randomString()}`
 }
 

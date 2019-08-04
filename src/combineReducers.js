@@ -2,6 +2,9 @@ import ActionTypes from './utils/actionTypes'
 import warning from './utils/warning'
 import isPlainObject from './utils/isPlainObject'
 
+// reducer 合并
+// createStore 只接收一个 rootReducer
+
 function getUndefinedStateErrorMessage(key, action) {
   const actionType = action && action.type
   const actionDescription =
@@ -110,12 +113,17 @@ function assertReducerShape(reducers) {
  * @returns {Function} A reducer function that invokes every reducer inside the
  * passed object, and builds a state object with the same shape.
  */
+
+// 多个 reducers 需要放置到一个对象中
 export default function combineReducers(reducers) {
   const reducerKeys = Object.keys(reducers)
   const finalReducers = {}
+
+  // 做一次 reducers 过滤检查并将合法的 reducer放置到finalReducers
   for (let i = 0; i < reducerKeys.length; i++) {
     const key = reducerKeys[i]
 
+    // 对应key的值为空的话， 抛出警告
     if (process.env.NODE_ENV !== 'production') {
       if (typeof reducers[key] === 'undefined') {
         warning(`No reducer provided for key "${key}"`)
@@ -142,7 +150,9 @@ export default function combineReducers(reducers) {
     shapeAssertionError = e
   }
 
+  // 返回一个合并后的reducer
   return function combination(state = {}, action) {
+    // 如果又错误则抛出
     if (shapeAssertionError) {
       throw shapeAssertionError
     }
@@ -164,15 +174,20 @@ export default function combineReducers(reducers) {
     for (let i = 0; i < finalReducerKeys.length; i++) {
       const key = finalReducerKeys[i]
       const reducer = finalReducers[key]
+      // 又dipatch传递的的store
       const previousStateForKey = state[key]
+      // 分别获取每个子reducer的状态树
       const nextStateForKey = reducer(previousStateForKey, action)
       if (typeof nextStateForKey === 'undefined') {
         const errorMessage = getUndefinedStateErrorMessage(key, action)
         throw new Error(errorMessage)
       }
+      
       nextState[key] = nextStateForKey
+      // 是否更改,一旦为true就为true了
       hasChanged = hasChanged || nextStateForKey !== previousStateForKey
     }
+    // 返回状态
     return hasChanged ? nextState : state
   }
 }
